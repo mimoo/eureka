@@ -14,27 +14,27 @@ import(
 )
 
 func main(){
+	// stupid vars
 	var err error
 	
-	// parse
+	// parse flags
 	encrypt := flag.Bool("encrypt", false, "to encrypt")
 	decrypt := flag.Bool("decrypt", false, "to decrypt")
-
 	keyHex := flag.String("key", "", "256-bit key")
 	inFile := flag.String("file", "", "file to encrypt or decrypt")
 
 	flag.Parse()
 
-	// validate encrypt or decrypt
 	if *encrypt == false && *decrypt == false {
-		fmt.Println("do you want to encrypt or decrypt? Use -h to get help.")
+		fmt.Println("Do you want to encrypt or decrypt? Use -h to get help.")
 		return
 	}
 
-	//
-	var key []byte
-
+	// nonce = 0
 	nonce := bytes.Repeat([]byte{0}, 12)
+
+	// key = ?
+	var key []byte
 
 	if *encrypt {
 		// create key
@@ -44,6 +44,7 @@ func main(){
 			return
 		}
 	} else {
+		// get hex key from flag
 		key, err = hex.DecodeString(*keyHex)
 		if err != nil || len(key) != 32 {
 			fmt.Println("This is not a 256-bit key")
@@ -65,14 +66,14 @@ func main(){
 		return
 	}
 
-	// open file
+	// open input file
 	content, err := ioutil.ReadFile(*inFile)
 	if err != nil {
 		fmt.Println("cannot open input file")
 		return
 	}
 
-	// encrypt / decrypt
+	// encrypt or decrypt
 	var content_after []byte
 	
 	if *encrypt {
@@ -85,8 +86,9 @@ func main(){
 		}
 	}
 
-	// write file
+	// write output file
 	var outFile string
+
 	if *decrypt {
 		outFile = "DECRYPTED_FILE"
 	} else {
@@ -97,19 +99,21 @@ func main(){
 	outFile += now.Format("_2006-01-02_03-04-05")
 
 	err = ioutil.WriteFile(outFile, content_after, 0644)
+
 	if err != nil {
 		if *decrypt {
-			fmt.Printf("can't write file at %s\n", outFile)
+			fmt.Printf("Can't write file at %s\n", outFile)
 		} else {
-			fmt.Printf("can't write file at %s\n", outFile)
+			fmt.Printf("Can't write file at %s\n", outFile)
 		}
 		return
 	}
 
 	if *decrypt {
-		fmt.Printf("file decrypted at %s\n", outFile)
+		fmt.Printf("File decrypted at %s\n", outFile)
+		fmt.Println("Cheers.")
 	} else {
-		fmt.Printf("file encrypted at %s\n", outFile)
+		fmt.Printf("File encrypted at %s\n", outFile)
 		fmt.Println("In a different secure channel, pass the following one-time key to your recipient.")
 		fmt.Printf("%032x\n", key)
 	}

@@ -6,7 +6,7 @@ Use it at your own risks. (Inb4 someone accuses me of killing innocent people.)
 
 ## Install
 
-[Get it here](releases/tag/0.1.0) or build it yourself.
+[Get it here](https://github.com/mimoo/EncryptFileWithAES-GCM/releases) or build it yourself.
 
 ## Usage
 
