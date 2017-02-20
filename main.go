@@ -34,7 +34,7 @@ func main(){
 	//
 	var key []byte
 
-	nonce := bytes.Repeat([]byte{0}, 12) // TODO: if this works, make sure that first keystream is not AD key ( E_k(0) )
+	nonce := bytes.Repeat([]byte{0}, 12)
 
 	if *encrypt {
 		// create key
@@ -72,8 +72,6 @@ func main(){
 		return
 	}
 
-	// TODO: verify length of file, with limitation to AES-GCM counter
-	
 	// encrypt / decrypt
 	var content_after []byte
 	
