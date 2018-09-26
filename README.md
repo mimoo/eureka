@@ -1,8 +1,6 @@
 # ENCRYPT FILE WITH AES-GCM
 
-I couldn't encrypt a file with AES-GCM using the OpenSSL command line tool, so I made this.
-
-Use it at your own risks. (Inb4 someone accuses me of killing innocent people.)
+This is a simple tool to encrypt and decrypt files.
 
 ## Install
 
