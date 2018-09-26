@@ -1,22 +1,22 @@
 package main
 
-import(
-	"crypto/cipher"
+import (
+	"bytes"
 	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
+	"flag"
 	"fmt"
 	"io"
-	"bytes"
 	"io/ioutil"
-	"flag"
-	"encoding/hex"
 	"time"
 )
 
-func main(){
+func main() {
 	// stupid vars
 	var err error
-	
+
 	// parse flags
 	encrypt := flag.Bool("encrypt", false, "to encrypt")
 	decrypt := flag.Bool("decrypt", false, "to decrypt")
@@ -26,7 +26,14 @@ func main(){
 	flag.Parse()
 
 	if *encrypt == false && *decrypt == false {
-		fmt.Println("Do you want to encrypt or decrypt? Use -h to get help.")
+		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
+		fmt.Println(" Eureka is a tool to help you encrypt/decrypt a file")
+		fmt.Println(" to encrypt:")
+		fmt.Println("     eureka -encrypt -file [your-file]")
+		fmt.Println(" to decrypt:")
+		fmt.Println("     eureka -decrypt -file [encrypted-file] -key [hex-key]")
+		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
+		flag.Usage()
 		return
 	}
 
@@ -41,6 +48,7 @@ func main(){
 		key = make([]byte, 32)
 		if _, err = io.ReadFull(rand.Reader, key); err != nil {
 			fmt.Println("Can't create key")
+			flag.Usage()
 			return
 		}
 	} else {
@@ -48,9 +56,11 @@ func main(){
 		key, err = hex.DecodeString(*keyHex)
 		if err != nil || len(key) != 32 {
 			fmt.Println("This is not a 256-bit key")
+			flag.Usage()
+			return
 		}
 	}
-	
+
 	// create AES-GCM instance
 	cipherAES, err := aes.NewCipher(key)
 
@@ -70,12 +80,13 @@ func main(){
 	content, err := ioutil.ReadFile(*inFile)
 	if err != nil {
 		fmt.Println("cannot open input file")
+		flag.Usage()
 		return
 	}
 
 	// encrypt or decrypt
 	var content_after []byte
-	
+
 	if *encrypt {
 		content_after = AESgcm.Seal(nil, nonce, content, nil)
 	} else { // decrypt
@@ -117,6 +128,6 @@ func main(){
 		fmt.Println("In a different secure channel, pass the following one-time key to your recipient.")
 		fmt.Printf("%032x\n", key)
 	}
-	
+
 	//
 }
