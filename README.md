@@ -1,12 +1,16 @@
 # ENCRYPT FILE WITH AES-GCM
 
-I couldn't encrypt a file with AES-GCM using the OpenSSL command line tool, so I made this.
-
-Use it at your own risks. (Inb4 someone accuses me of killing innocent people.)
+This is a simple tool to encrypt and decrypt files.
 
 ## Install
 
-[Get it here](https://github.com/mimoo/EncryptFileWithAES-GCM/releases) or build it yourself.
+[Get a binary here](https://github.com/mimoo/EncryptFileWithAES-GCM/releases).
+
+If you have [Go]() installed and `/usr/local/go/bin` is in your PATH, you should be able to simply get the binary by doing
+
+```
+go get github.com/mimoo/EncryptFileWithAES-GCM
+```
 
 ## Usage
 
