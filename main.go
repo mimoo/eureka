@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"time"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -101,13 +102,23 @@ func main() {
 	var outFile string
 
 	if *decrypt {
-		outFile = "DECRYPTED_FILE"
+		var path string
+		path, outFile = filepath.Split(*inFile)
+		if filepath.Ext(outFile) == ".encrypted" && len(outFile) > 10 {
+			fmt.Println(outFile)
+			outFile = strings.TrimSuffix(outFile, ".encrypted")
+			fmt.Println(outFile)
+		} else {
+			outFile = outFile + ".decrypted"
+		}
+		outFile = path + outFile
 	} else {
-		outFile = "ENCRYPTED_FILE"
+		_, outFile = filepath.Split(*inFile)
+		outFile = outFile + ".encrypted"
 	}
 
-	now := time.Now()
-	outFile += now.Format("_2006-01-02_03-04-05")
+	//	now := time.Now()
+	//	outFile += now.Format("_2006-01-02_03-04-05")
 
 	err = ioutil.WriteFile(outFile, content_after, 0644)
 
