@@ -1,8 +1,6 @@
-# ENCRYPT A FILE WITH EASE
-
 ![EUREKA](https://i.imgur.com/qSscFjx.png)
 
-This is a simple tool to encrypt and decrypt files.
+Eureka is a simple tool to encrypt and decrypt files. 
 
 ## Install
 
