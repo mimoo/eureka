@@ -26,10 +26,28 @@ brew tap mimoo/eureka && brew install eureka
 
 ## Usage
 
-`./eureka -encrypt -file [your-file]` will encrypt a file AND give you a one-time 256-bit AES key.
+You are trying to send *Bob* the file `myfile.txt`. Start by encrypting the file via:
 
-You're supposed to upload that file somewhere, and send the key to your recipient in a separate channel.
+```
+eureka -encrypt -file myfile.txt
+```
 
-The recipient can use the key and the file like that:
+which will return a one-time 256-bit AES key and create a new `myfile.txt.encrypted` file:
 
-`./eureka -decrypt -file [encrypted-file] -key [hex-key]`
+```
+File encrypted at myfile.txt.encrypted
+In a different secure channel, pass the following one-time key to your recipient.
+613800fc6cf88f09aa6aeafab3eedd627503e6c5de28040c549efc2c6f80178d
+```
+
+Now. Find a channel to send the encrypted file to *Bob*. It could be via email, or via dropbox, or via google drive, etc.
+
+You then need to transmit the one-time key (`613800fc6cf88f09aa6aeafab3eedd627503e6c5de28040c549efc2c6f80178d`) to *Bob* in a **different channel**. For example, if you exchanged the file (or a link to the file) via email, then send this key to *Bob* via WhatsApp.
+
+Once *Bob* receives the file and the one-time key from two different channels, he can decrypt the file via this command:
+
+```
+eureka -decrypt -file myfile.txt.encrypted -key 613800fc6cf88f09aa6aeafab3eedd627503e6c5de28040c549efc2c6f80178d
+```
+
+which will create a new file `myfile.txt` containing the decrypted content.
