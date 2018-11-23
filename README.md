@@ -4,12 +4,24 @@ Eureka is a simple tool to encrypt and decrypt files.
 
 ## Install
 
+**Binary**.
+
 [Get a binary here](https://github.com/mimoo/eureka/releases).
+
+**Go get**.
 
 If you have [Go]() installed and `/usr/local/go/bin` is in your PATH, you should be able to simply get the binary by doing
 
 ```
 go get github.com/mimoo/eureka
+```
+
+**Homebrew**.
+
+If you are on MacOS, just use Homebrew:
+
+```
+brew tap mimoo/eureka && brew install eureka
 ```
 
 ## Usage
