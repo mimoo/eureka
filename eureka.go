@@ -117,10 +117,7 @@ func main() {
 		outFile = outFile + ".encrypted"
 	}
 
-	//	now := time.Now()
-	//	outFile += now.Format("_2006-01-02_03-04-05")
-
-	err = ioutil.WriteFile(outFile, content_after, 0644)
+	err = ioutil.WriteFile(outFile, content_after, 0600)
 
 	if err != nil {
 		if *decrypt {
