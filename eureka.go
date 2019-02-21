@@ -120,7 +120,7 @@ func main() {
 		key, err = hex.DecodeString(*keyHex)
 		if err != nil || len(key) != 32 {
 			fmt.Println("error: the key has to be a 256-bit hexadecimal string")
-			flag.Usage()
+			return
 		}
 
 	}
@@ -169,14 +169,24 @@ func main() {
 		// open file
 		content, err := ioutil.ReadFile(*inFile)
 		if err != nil {
-			fmt.Println("cannot open input file")
+			fmt.Println("error: cannot open input file")
 			flag.Usage()
 			return
 		}
 		// decrypt
 		contentAfter, err = AESgcm.Open(nil, nonce, content, nil)
 		if err != nil {
-			fmt.Println("Cannot decrypt. The key is not correct or someone tried to modify your file.")
+			fmt.Println("error: cannot decrypt. The key is not correct or someone tried to modify your file.")
+			return
+		}
+		// create a decrypted folder
+		if _, err := os.Stat("./decrypted"); err != nil {
+			if err := os.MkdirAll("./decrypted", 0755); err != nil {
+				fmt.Println("error: cannot create folder 'decrypted'")
+				return
+			}
+		} else {
+			fmt.Println("error: the folder 'decrypted' already exists. Decrypting the file could overwrite files.")
 			return
 		}
 		// decompress it
