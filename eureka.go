@@ -78,12 +78,23 @@ func main() {
 	decrypt := flag.Bool("decrypt", false, "to decrypt")
 	keyHex := flag.String("key", "", "256-bit key")
 	inFile := flag.String("file", "", "file to encrypt or decrypt")
+	setupUi := flag.String("setup-ui", "", "to setup interactivity in your OS, pass the directory where Eureka is installed as argument")
 
 	flag.Parse()
 
 	// redirect to github.com/mimoo/eureka
 	if *about {
 		openBrowser("https://www.github.com/mimoo/eureka")
+		return
+	}
+
+	// setup user-interaction
+	if *setupUi != "" {
+		fmt.Println("setting up right-click context menus")
+		fmt.Printf("the path to your executable is %s\n", *setupUi)
+		install(*setupUi)
+		fmt.Println("done")
+		return
 	}
 
 	if *encrypt == false && *decrypt == false {
