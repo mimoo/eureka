@@ -69,8 +69,8 @@ which will create a new file `myfile.txt` under a `decrypted` folder containing 
 
 For the moment, on windows you can add "encrypt" and "decrypt" commands when right-clicking on files or folders.
 
-To set this up, I recommend placing `eureka.exe` and `eureka.ico` inside `C:\Program Files\eureka`. Then call:
+To set this up, I recommend placing `eureka.exe` and `eureka.ico` inside `C:\Program Files\Eureka`. Then call:
 
 ```
-eureka.exe -ui-setup "C:\Program Files\eureka"
+eureka.exe -ui-setup "C:\Program Files\Eureka"
 ```

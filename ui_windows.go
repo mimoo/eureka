@@ -2,12 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"syscall"
 
 	"golang.org/x/sys/windows/registry"
 )
 
 func install(dir string) {
+	// check that executable is reachable
+	if _, err := os.Stat(dir + `\eureka.exe`); os.IsNotExist(err) {
+		fmt.Println("The eureka executable cannot be found at", dir+`\eureka.exe`)
+		fmt.Println("Are you sure that you entered the correct path?")
+		return
+	}
+
 	// obtain HKEY_CLASSES_ROOT
 	hkey := registry.Key(syscall.HKEY_CLASSES_ROOT)
 
@@ -20,6 +28,7 @@ func install(dir string) {
 		// right-click in the background, when inside a folder
 		`Directory\background\shell`: "%V",
 	}
+	//
 	for path, arg := range paths {
 		newk, _, err := registry.CreateKey(hkey, path+`\Encrypt\command`, registry.ALL_ACCESS)
 		if err != nil {
@@ -62,4 +71,7 @@ func install(dir string) {
 		return
 	}
 	newk.Close()
+
+	//
+	fmt.Println("done.")
 }

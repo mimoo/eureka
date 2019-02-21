@@ -91,9 +91,7 @@ func main() {
 	// setup user-interaction
 	if *setupUi != "" {
 		fmt.Println("setting up right-click context menus")
-		fmt.Printf("the path to your executable is %s\n", *setupUi)
 		install(*setupUi)
-		fmt.Println("done")
 		return
 	}
 
