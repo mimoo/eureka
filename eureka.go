@@ -3,10 +3,10 @@
 // ======
 // Eureka is a handy utility to encrypt files and folders. It follows several principles:
 //
-// - I want to encrypt and send a file to someone or myself
-// - Eureka should be easy to install
-// - PGP is too cumbersome to use, I want something simple (right-click > encrypt)
-// - I already share two separate and secure channels with the recipient (mail + signal for example)
+// - I want to encrypt and send a file to someone or myself.
+// - Eureka should be easy to install and share.
+// - PGP is too cumbersome to use, I want something simple (right-click > encrypt).
+// - I already share two separate and secure channels with the recipient (mail + signal for example).
 //
 // Here how the code is organized:
 //
@@ -33,6 +33,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	// clipboard behaves differently depending on OS
 	"github.com/atotto/clipboard"
@@ -90,8 +91,12 @@ func main() {
 
 	// setup user-interaction
 	if *setupUi != "" {
-		fmt.Println("setting up right-click context menus")
-		install(*setupUi)
+		if *setupUi == "remove" {
+			uninstall()
+		} else {
+			fmt.Println("setting up right-click context menus")
+			install(strings.Trim(*setupUi, `"`))
+		}
 		return
 	}
 

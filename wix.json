@@ -1,0 +1,55 @@
+{
+  "product": "Eureka",
+  "company": "none",
+  "license": "LICENSE",
+  "upgrade-code": "4d4caf14-2adc-45c4-8712-72931baa3830",
+  "icon": "[INSTALLDIR]\\eureka.ico",
+  "files": {
+    "guid": "5cd63f2a-4f83-41cf-834e-0dcec9f39fc6",
+    "items": [
+      "build/amd64/eureka.exe",
+      "eureka.ico"
+    ]
+  },
+  "env": {
+    "guid": "924e9f02-2309-4a41-a0e8-414c876e9a97",
+    "vars": [
+      {
+        "name": "some",
+        "value": "value",
+        "permanent": "no",
+        "system": "no",
+        "action": "set",
+        "part": "last"
+      }
+    ]
+  },
+  "choco": {
+    "description": "Eureka allows you to encrypt files",
+    "project-url": "https://github.com/mimoo/eureka",
+    "tags": "eureka encrypt files",
+    "license-url": "https://github.com/mimoo/eureka"
+  },
+  "shortcuts": {
+    "guid": "",
+    "items": [
+      {
+        "name": "Eureka",
+        "description": "About Eureka",
+        "target": "[INSTALLDIR]\\eureka.exe -about",
+        "wdir": "INSTALLDIR",
+        "icon":"eureka.ico"
+      }
+    ]
+  },
+  "hooks": [
+    {
+      "command": "\"[INSTALLDIR]\\eureka.exe\" -setup-ui \"[INSTALLDIR]\"",
+      "when": "install"
+    },
+    {
+      "command": "\"[INSTALLDIR]\\eureka.exe\" -setup-ui remove",
+      "when": "uninstall"
+    }
+  ]
+}

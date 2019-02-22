@@ -8,6 +8,15 @@ import (
 	"golang.org/x/sys/windows/registry"
 )
 
+var paths = map[string]string{
+	// right-click on a file
+	`*\shell`: "%1",
+	// right-click on a folder
+	`Directory\shell`: "%1",
+	// right-click in the background, when inside a folder
+	`Directory\background\shell`: "%V",
+}
+
 func install(dir string) {
 	// check that executable is reachable
 	if _, err := os.Stat(dir + `\eureka.exe`); os.IsNotExist(err) {
@@ -20,15 +29,6 @@ func install(dir string) {
 	hkey := registry.Key(syscall.HKEY_CLASSES_ROOT)
 
 	// add right-click > encrypt
-	paths := map[string]string{
-		// right-click on a file
-		`*\shell`: "%1",
-		// right-click on a folder
-		`Directory\shell`: "%1",
-		// right-click in the background, when inside a folder
-		`Directory\background\shell`: "%V",
-	}
-	//
 	for path, arg := range paths {
 		newk, _, err := registry.CreateKey(hkey, path+`\Encrypt\command`, registry.ALL_ACCESS)
 		if err != nil {
@@ -74,4 +74,17 @@ func install(dir string) {
 
 	//
 	fmt.Println("done.")
+}
+
+func uninstall() {
+	// obtain HKEY_CLASSES_ROOT
+	hkey := registry.Key(syscall.HKEY_CLASSES_ROOT)
+
+	// delete right-click > encrypt
+	for path := range paths {
+		registry.DeleteKey(hkey, path+`\Encrypt`)
+	}
+
+	// delete right-click > decrypt + icon
+	registry.DeleteKey(hkey, `.encrypted`)
 }
