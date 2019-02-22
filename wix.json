@@ -7,7 +7,7 @@
   "files": {
     "guid": "5cd63f2a-4f83-41cf-834e-0dcec9f39fc6",
     "items": [
-      "build/amd64/eureka.exe",
+      "eureka.exe",
       "eureka.ico"
     ]
   },
