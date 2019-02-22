@@ -35,8 +35,10 @@ import (
 	"runtime"
 	"strings"
 
-	// clipboard behaves differently depending on OS
+	// cross-platform clipboard
 	"github.com/atotto/clipboard"
+	// cross-platform GUI
+	"github.com/sqweek/dialog"
 )
 
 // open a link in your favorite browser
@@ -58,16 +60,30 @@ func openBrowser(url string) {
 	}
 }
 
-// TODO: this doesn't work on windows. I think we'll need a GUI box
-func promptKey() []byte {
+// prompt for the key with a GUI
+func promptKey() string {
+
+	ok := dialog.Message("%s", "Do you want to use your clipboard as the key?").Title("Eureka").YesNo()
+	if ok { // clipboard option
+		key, err := clipboard.ReadAll()
+		fmt.Println([]byte(key))
+		if err != nil {
+			dialog.Message("%s", "error: couldn't read the key from clipboard").Title("Eureka").Info()
+			return ""
+		}
+		return key
+	}
+
+	// terminal option
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter 256-bit hexadecimal key: ")
 	key, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println("couldn't read the key")
-		return nil
+		return ""
 	}
-	return []byte(key)
+
+	return key
 }
 
 func main() {
@@ -127,12 +143,12 @@ func main() {
 		}
 	} else { // get key from flag if we are decrypting
 		if *keyHex == "" { // if flag key is empty, prompt the user
-			key = promptKey()
+			*keyHex = promptKey()
 		}
-
 		// decode and check key
 		key, err = hex.DecodeString(*keyHex)
 		if err != nil || len(key) != 32 {
+			fmt.Println(err)
 			fmt.Println("error: the key has to be a 256-bit hexadecimal string")
 			return
 		}
@@ -172,13 +188,15 @@ func main() {
 		}
 		// place key in clipboard
 		stringKey := fmt.Sprintf("%032x", key)
-		clipboard.WriteAll(stringKey)
 		// notification
-		fmt.Printf("File encrypted at %s\n", outFile)
-		fmt.Println("your recipient will need Eureka to decrypt the file: https://github.com/mimoo/eureka")
-		fmt.Println("In a different secure channel, pass the following one-time key to your recipient.")
-		fmt.Println("Note that the following key has also been copied to your clipboard")
-		fmt.Println(stringKey)
+		ok := dialog.Message("File encrypted at %s\nyour recipient will need Eureka to decrypt the file: https://github.com/mimoo/eureka\nIn a different secure channel, pass the following one-time key to your recipient.\n%s\nDo you want to use your clipboard as the key?", outFile, stringKey).Title("Eureka").YesNo()
+
+		if ok { // copy to clipboard
+			clipboard.WriteAll(stringKey)
+		} else { // print to terminal and pause
+			fmt.Println(stringKey)
+			fmt.Scanln()
+		}
 	} else {
 		// open file
 		content, err := ioutil.ReadFile(*inFile)
@@ -210,10 +228,6 @@ func main() {
 			return
 		}
 		// notification
-		fmt.Println("File decrypted at decrypted/")
-		fmt.Println("Cheers.")
+		dialog.Message("File decrypted at decrypted/\nCheers.").Title("Eureka").Info()
 	}
-
-	// pause
-	fmt.Scanln()
 }
