@@ -17,7 +17,7 @@ There are several ways to install Eureka, with more on the way.
 
 **Binary**.
 
-[Get a binary here](https://github.com/mimoo/eureka/releases).
+[Get a binary here](https://github.com/mimoo/eureka/releases/tag/1.0).
 
 **Go get**.
 
@@ -69,8 +69,4 @@ which will create a new file `myfile.txt` under a `decrypted` folder containing 
 
 For the moment, on windows you can add "encrypt" and "decrypt" commands when right-clicking on files or folders.
 
-To set this up, I recommend placing `eureka.exe` and `eureka.ico` inside `C:\Program Files\Eureka`. Then call:
-
-```
-eureka.exe -ui-setup "C:\Program Files\Eureka"
-```
+To set this up, install the [pre-release](https://github.com/mimoo/eureka/releases/tag/2.0) msi on windows.
