@@ -128,8 +128,8 @@ func main() {
 		return
 	}
 
-	// nonce = 0
-	nonce := bytes.Repeat([]byte{0}, 12)
+	// nonce = 1111...
+	nonce := bytes.Repeat([]byte{1}, 12)
 
 	// key = ?
 	var key []byte
