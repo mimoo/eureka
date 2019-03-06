@@ -6,7 +6,7 @@ Eureka is a simple tool to encrypt files and folders. It works on Windows, Linux
 
 Eureka is pretty simple, and well commented. Anyone is free to audit the software themselves.
 
-With that in mind, software is rarely bug-free, and it is possible that attacks might exist (like zip bombs, or path traversal attacks via file name). For this reason, use Eureka with caution: 
+With that in mind, software is rarely bug-free, and it is possible that attacks might exist (like zip bombs, path traversal attacks via file name, [zip slips](https://snyk.io/research/zip-slip-vulnerability)). For this reason, use Eureka with caution: 
 
 * Use it on data that you trust. 
 * Decrypt content only when coming from a trusted person.
