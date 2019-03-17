@@ -189,13 +189,13 @@ func main() {
 		// place key in clipboard
 		stringKey := fmt.Sprintf("%032x", key)
 		// notification
-		ok := dialog.Message("File encrypted at %s\nyour recipient will need Eureka to decrypt the file: https://github.com/mimoo/eureka\nIn a different secure channel, pass the following one-time key to your recipient.\n%s\nDo you want to use your clipboard as the key?", outFile, stringKey).Title("Eureka").YesNo()
+		ok := dialog.Message("File encrypted at %s.\nYour recipient will need Eureka to decrypt the file. It can be downloaded here: https://github.com/mimoo/eureka.\nIn a different secure channel, pass the following one-time key to your recipient.\n%s\nDo you want to use your clipboard to copy the key?", outFile, stringKey).Title("Eureka").YesNo()
 
 		if ok { // copy to clipboard
 			clipboard.WriteAll(stringKey)
 		} else { // print to terminal and pause
+			fmt.Printf("File encrypted at %s.\nYour recipient will need Eureka to decrypt the file. It can be downloaded here: https://github.com/mimoo/eureka.\nIn a different secure channel, pass the following one-time key to your recipient:\n", outFile)
 			fmt.Println(stringKey)
-			fmt.Scanln()
 		}
 	} else {
 		// open file
