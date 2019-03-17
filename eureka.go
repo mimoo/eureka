@@ -95,7 +95,7 @@ func main() {
 	decrypt := flag.Bool("decrypt", false, "to decrypt")
 	keyHex := flag.String("key", "", "256-bit key")
 	inFile := flag.String("file", "", "file to encrypt or decrypt")
-	setupUi := flag.String("setup-ui", "", "to setup interactivity in your OS, pass the directory where Eureka is installed as argument")
+	setupUI := flag.String("setup-ui", "", "to setup interactivity in your OS, pass the directory where Eureka is installed as argument")
 
 	flag.Parse()
 
@@ -106,12 +106,12 @@ func main() {
 	}
 
 	// setup user-interaction
-	if *setupUi != "" {
-		if *setupUi == "remove" {
+	if *setupUI != "" {
+		if *setupUI == "remove" {
 			uninstall()
 		} else {
 			fmt.Println("setting up right-click context menus")
-			install(strings.Trim(*setupUi, `"`))
+			install(strings.Trim(*setupUI, `"`))
 		}
 		return
 	}
