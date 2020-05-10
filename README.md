@@ -6,11 +6,6 @@ Eureka is a simple tool to encrypt files and folders. It works on Windows, Linux
 
 Eureka is pretty simple, and well commented. Anyone is free to audit the software themselves.
 
-With that in mind, software is rarely bug-free, and it is possible that attacks might exist (like zip bombs, path traversal attacks via file name, [zip slips](https://snyk.io/research/zip-slip-vulnerability)). For this reason, use Eureka with caution: 
-
-* Use it on data that you trust. 
-* Decrypt content only when coming from a trusted person.
-
 ## Install
 
 There are several ways to install Eureka, with more on the way.
@@ -60,13 +55,7 @@ In a different secure channel, pass the following one-time key to your recipient
 **4.** Once *Bob* receives the file and the one-time key from two different channels, he can decrypt the file via this command:
 
 ```
-eureka -decrypt -file myfile.txt.encrypted -key 613800fc6cf88f09aa6aeafab3eedd627503e6c5de28040c549efc2c6f80178d
+eureka -decrypt -file myfile.txt.encrypted
 ```
 
 which will create a new file `myfile.txt` under a `decrypted` folder containing the original content.
-
-## Interactivity
-
-For the moment, on windows you can add "encrypt" and "decrypt" commands when right-clicking on files or folders.
-
-To set this up, install the [pre-release](https://github.com/mimoo/eureka/releases/tag/2.0) msi on windows.
