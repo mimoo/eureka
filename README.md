@@ -12,7 +12,7 @@ There are several ways to install Eureka, with more on the way.
 
 **Binary**.
 
-[Get a binary here](https://github.com/mimoo/eureka/releases/tag/1.0).
+[Get a binary here](https://github.com/mimoo/eureka/releases).
 
 **Go get**.
 
