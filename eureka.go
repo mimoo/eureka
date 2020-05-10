@@ -37,8 +37,6 @@ import (
 
 	// cross-platform clipboard
 	"github.com/atotto/clipboard"
-	// cross-platform GUI
-	"github.com/sqweek/dialog"
 )
 
 // open a link in your favorite browser
@@ -61,29 +59,33 @@ func openBrowser(url string) {
 }
 
 // prompt for the key with a GUI
-func promptKey() string {
+func promptKey() (string, error) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Do you want to use your clipboard as the key? (Y/n)")
+	useClipboard, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
 
-	ok := dialog.Message("%s", "Do you want to use your clipboard as the key?").Title("Eureka").YesNo()
-	if ok { // clipboard option
+	// clipboard option
+	useClipboard = strings.TrimSpace(useClipboard)
+	useClipboard = strings.ToLower(useClipboard)
+	if useClipboard != "n" && useClipboard != "N" {
 		key, err := clipboard.ReadAll()
-		fmt.Println([]byte(key))
 		if err != nil {
-			dialog.Message("%s", "error: couldn't read the key from clipboard").Title("Eureka").Info()
-			return ""
+			panic("error: couldn't read the key from clipboard")
 		}
-		return key
+		return key, nil
 	}
 
 	// terminal option
-	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter 256-bit hexadecimal key: ")
 	key, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Println("couldn't read the key")
-		return ""
+		return "", fmt.Errorf("couldn't read the key")
 	}
 
-	return key
+	return key, nil
 }
 
 func main() {
@@ -93,9 +95,7 @@ func main() {
 	encrypt := flag.Bool("encrypt", false, "to encrypt")
 	about := flag.Bool("about", false, "to get redirected to github.com/mimoo/eureka")
 	decrypt := flag.Bool("decrypt", false, "to decrypt")
-	keyHex := flag.String("key", "", "256-bit key")
 	inFile := flag.String("file", "", "file to encrypt or decrypt")
-	setupUi := flag.String("setup-ui", "", "to setup interactivity in your OS, pass the directory where Eureka is installed as argument")
 
 	flag.Parse()
 
@@ -105,24 +105,13 @@ func main() {
 		return
 	}
 
-	// setup user-interaction
-	if *setupUi != "" {
-		if *setupUi == "remove" {
-			uninstall()
-		} else {
-			fmt.Println("setting up right-click context menus")
-			install(strings.Trim(*setupUi, `"`))
-		}
-		return
-	}
-
-	if *encrypt == false && *decrypt == false {
+	if (*encrypt == false && *decrypt == false) || *inFile == "" {
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		fmt.Println(" Eureka is a tool to help you encrypt/decrypt a file")
 		fmt.Println(" to encrypt:")
 		fmt.Println("     eureka -encrypt -file [your-file]")
 		fmt.Println(" to decrypt:")
-		fmt.Println("     eureka -decrypt -file [encrypted-file] -key [hex-key]")
+		fmt.Println("     eureka -decrypt -file [encrypted-file]")
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		flag.Usage()
 		return
@@ -134,25 +123,31 @@ func main() {
 	// key = ?
 	var key []byte
 
-	if *encrypt { // generate random key if we're encrypting
+	// generate random key if we're encrypting
+	if *encrypt {
 		key = make([]byte, 32)
 		if _, err = io.ReadFull(rand.Reader, key); err != nil {
 			fmt.Println("error: randomness cannot be generated on your system")
 			flag.Usage()
 			return
 		}
-	} else { // get key from flag if we are decrypting
-		if *keyHex == "" { // if flag key is empty, prompt the user
-			*keyHex = promptKey()
-		}
-		// decode and check key
-		key, err = hex.DecodeString(*keyHex)
-		if err != nil || len(key) != 32 {
-			fmt.Println(err)
-			fmt.Println("error: the key has to be a 256-bit hexadecimal string")
+	}
+
+	// get key if we are decrypting
+	if *decrypt {
+		// get key
+		keyHex, err := promptKey()
+		if err != nil {
+			fmt.Printf("eureka: %s", err)
 			return
 		}
 
+		// decode and check key
+		key, err = hex.DecodeString(keyHex)
+		if err != nil || len(key) != 32 {
+			fmt.Println("error: the key has to be a 256-bit hexadecimal string")
+			return
+		}
 	}
 
 	// create AES-GCM instance
@@ -189,15 +184,30 @@ func main() {
 		// place key in clipboard
 		stringKey := fmt.Sprintf("%032x", key)
 		// notification
-		ok := dialog.Message("File encrypted at %s\nyour recipient will need Eureka to decrypt the file: https://github.com/mimoo/eureka\nIn a different secure channel, pass the following one-time key to your recipient.\n%s\nDo you want to use your clipboard as the key?", outFile, stringKey).Title("Eureka").YesNo()
+		fmt.Printf("File encrypted at %s\n", outFile)
+		fmt.Println("Your recipient will need Eureka to decrypt the file: https://github.com/mimoo/eureka")
+		fmt.Println("In a different secure channel, pass the following one-time key to your recipient.")
 
-		if ok { // copy to clipboard
+		// clipboard option
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("Do you want to copy the key to your clipboard? (Y/n)")
+		useClipboard, err := reader.ReadString('\n')
+		if err != nil {
+			panic(err)
+			return
+		}
+
+		useClipboard = strings.TrimSpace(useClipboard)
+		useClipboard = strings.ToLower(useClipboard)
+		if useClipboard != "n" && useClipboard != "N" { // use clipboard
 			clipboard.WriteAll(stringKey)
+			fmt.Println("key copied to your clipboard")
 		} else { // print to terminal and pause
 			fmt.Println(stringKey)
-			fmt.Scanln()
 		}
-	} else {
+	}
+
+	if *decrypt {
 		// open file
 		content, err := ioutil.ReadFile(*inFile)
 		if err != nil {
@@ -228,6 +238,6 @@ func main() {
 			return
 		}
 		// notification
-		dialog.Message("File decrypted at decrypted/\nCheers.").Title("Eureka").Info()
+		fmt.Println("File decrypted at decrypted/\nCheers.")
 	}
 }
