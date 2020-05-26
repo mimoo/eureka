@@ -60,32 +60,41 @@ func openBrowser(url string) {
 }
 
 // prompt for the key with a GUI
-func promptKey() (string, error) {
+func promptKey(noClipboard bool) (string, error) {
+	var key string
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("Do you want to use your clipboard as the key? (Y/n): ")
-	useClipboard, err := reader.ReadString('\n')
-	if err != nil {
-		return "", err
+	if !noClipboard {
+		fmt.Printf("Do you want to use your clipboard as the key? (Y/n): ")
+		useClipboard, err := reader.ReadString('\n')
+		if err != nil {
+			return "", err
+		}
+
+		// clipboard option
+		useClipboard = strings.TrimSpace(useClipboard)
+		if strings.ToLower(useClipboard) != "n" {
+			key, err := clipboard.ReadAll()
+			if err != nil {
+				return "", fmt.Errorf("error: couldn't read the key from clipboard: %s", err)
+			}
+			return key, nil
+		} else {
+			noClipboard = true
+		}
 	}
 
-	// clipboard option
-	useClipboard = strings.TrimSpace(useClipboard)
-	if strings.ToLower(useClipboard) != "n" {
-		key, err := clipboard.ReadAll()
+	if noClipboard {
+		// terminal option
+		fmt.Print("Enter 256-bit hexadecimal key: ")
+		key, err := reader.ReadString('\n')
 		if err != nil {
-			return "", fmt.Errorf("error: couldn't read the key from clipboard: %s", err)
+			return "", fmt.Errorf("couldn't read the key: %s", err)
 		}
+
+		key = strings.TrimSpace(key)
 		return key, nil
 	}
 
-	// terminal option
-	fmt.Print("Enter 256-bit hexadecimal key: ")
-	key, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("couldn't read the key: %s", err)
-	}
-
-	key = strings.TrimSpace(key)
 	return key, nil
 }
 
@@ -94,6 +103,7 @@ func main() {
 
 	// parse flags
 	about := flag.Bool("about", false, "to get redirected to github.com/mimoo/eureka")
+	noClipboard := flag.Bool("noclipboard", false, "no clipboard")
 
 	flag.Parse()
 
@@ -143,7 +153,7 @@ func main() {
 	// get key if we are decrypting
 	if *decrypt {
 		// get key
-		keyHex, err := promptKey()
+		keyHex, err := promptKey(*noClipboard)
 		if err != nil {
 			fmt.Printf("eureka: %s\n", err)
 			os.Exit(1)
@@ -197,23 +207,27 @@ func main() {
 
 		// clipboard option
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Printf("Do you want to copy the key to your clipboard? (Y/n): ")
-		useClipboard, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Printf("read clipboard input error: %s\nshow key here anyway:\n", err)
-			fmt.Println(stringKey)
-			return
-		}
-
-		useClipboard = strings.TrimSpace(useClipboard)
-		if strings.ToLower(useClipboard) != "n" { // use clipboard
-			if err := clipboard.WriteAll(stringKey); err != nil {
-				fmt.Printf("write clipboard error: %s\nshow key here anyway:\n", err)
+		if !*noClipboard {
+			fmt.Printf("Do you want to copy the key to your clipboard? (Y/n): ")
+			useClipboard, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Printf("read clipboard input error: %s\nshow key here anyway:\n", err)
 				fmt.Println(stringKey)
-			} else {
-				fmt.Println("key copied to your clipboard")
+				return
 			}
-		} else { // print to terminal and pause
+
+			useClipboard = strings.TrimSpace(useClipboard)
+			if strings.ToLower(useClipboard) != "n" { // use clipboard
+				if err := clipboard.WriteAll(stringKey); err != nil {
+					fmt.Printf("write clipboard error: %s\nshow key here anyway:\n", err)
+					fmt.Println(stringKey)
+				} else {
+					fmt.Println("key copied to your clipboard")
+				}
+			} else { // print to terminal and pause
+				fmt.Println(stringKey)
+			}
+		} else {
 			fmt.Println(stringKey)
 		}
 
