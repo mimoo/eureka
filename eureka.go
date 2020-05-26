@@ -73,8 +73,7 @@ func promptKey() (string, error) {
 	if strings.ToLower(useClipboard) != "n" {
 		key, err := clipboard.ReadAll()
 		if err != nil {
-			fmt.Println("error: couldn't read the key from clipboard")
-			os.Exit(1)
+			return "", fmt.Errorf("error: couldn't read the key from clipboard: %s", err)
 		}
 		return key, nil
 	}
