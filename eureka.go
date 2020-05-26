@@ -239,7 +239,7 @@ func main() {
 				os.Exit(1)
 			}
 		} else {
-			fmt.Println("error: the folder 'decrypted' already exists. Decrypting the file could overwrite files.")
+			fmt.Println("info: the folder 'decrypted' already exists. Decrypting the file could overwrite files.")
 			return
 		}
 		// decompress it
