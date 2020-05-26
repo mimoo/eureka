@@ -54,7 +54,8 @@ func openBrowser(url string) {
 		err = fmt.Errorf("unsupported platform")
 	}
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
@@ -73,7 +74,8 @@ func promptKey() (string, error) {
 	if useClipboard != "n" && useClipboard != "N" {
 		key, err := clipboard.ReadAll()
 		if err != nil {
-			panic("error: couldn't read the key from clipboard")
+			fmt.Println("error: couldn't read the key from clipboard")
+			os.Exit(1)
 		}
 		return key, nil
 	}
@@ -176,7 +178,7 @@ func main() {
 		var buf bytes.Buffer
 		if err := compress(*inFile, &buf); err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		// encrypt compressed content
 		contentAfter = AESgcm.Seal(nil, nonce, buf.Bytes(), nil)
@@ -199,8 +201,8 @@ func main() {
 		fmt.Println("Do you want to copy the key to your clipboard? (Y/n)")
 		useClipboard, err := reader.ReadString('\n')
 		if err != nil {
-			panic(err)
-			return
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		useClipboard = strings.TrimSpace(useClipboard)
@@ -241,7 +243,7 @@ func main() {
 		buf := bytes.NewReader(contentAfter)
 		if err := decompress(buf, "./decrypted"); err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		// notification
 		fmt.Println("File decrypted at decrypted/\nCheers.")
