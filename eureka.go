@@ -85,6 +85,7 @@ func promptKey() (string, error) {
 		return "", fmt.Errorf("couldn't read the key: %s", err)
 	}
 
+	key = strings.TrimSpace(key)
 	return key, nil
 }
 
