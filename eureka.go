@@ -62,7 +62,7 @@ func openBrowser(url string) {
 // prompt for the key with a GUI
 func promptKey() (string, error) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Do you want to use your clipboard as the key? (Y/n)")
+	fmt.Printf("Do you want to use your clipboard as the key? (Y/n): ")
 	useClipboard, err := reader.ReadString('\n')
 	if err != nil {
 		return "", err
@@ -197,7 +197,7 @@ func main() {
 
 		// clipboard option
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Do you want to copy the key to your clipboard? (Y/n)")
+		fmt.Printf("Do you want to copy the key to your clipboard? (Y/n): ")
 		useClipboard, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Printf("read clipboard input error: %s\nshow key here anyway:\n", err)
