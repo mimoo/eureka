@@ -92,10 +92,7 @@ func main() {
 	var err error
 
 	// parse flags
-	encrypt := flag.Bool("encrypt", false, "to encrypt")
 	about := flag.Bool("about", false, "to get redirected to github.com/mimoo/eureka")
-	decrypt := flag.Bool("decrypt", false, "to decrypt")
-	inFile := flag.String("file", "", "file to encrypt or decrypt")
 
 	flag.Parse()
 
@@ -105,16 +102,25 @@ func main() {
 		return
 	}
 
-	if (*encrypt == false && *decrypt == false) || *inFile == "" {
+	if len(flag.Args()) == 0 {
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		fmt.Println(" Eureka is a tool to help you encrypt/decrypt a file")
 		fmt.Println(" to encrypt:")
-		fmt.Println("     eureka -encrypt -file [your-file]")
+		fmt.Println("     eureka your-file")
 		fmt.Println(" to decrypt:")
-		fmt.Println("     eureka -decrypt -file [encrypted-file]")
+		fmt.Println("     eureka encrypted-file-end-with-dot-enc")
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		flag.Usage()
 		return
+	}
+
+	encrypt, decrypt := new(bool), new(bool)
+	inFile := &flag.Args()[0]
+	ext := strings.ToLower(filepath.Ext(*inFile))
+	if ext != ".enc" {
+		*encrypt = true
+	} else {
+		*decrypt = true
 	}
 
 	// nonce = 1111...
@@ -176,7 +182,7 @@ func main() {
 		contentAfter = AESgcm.Seal(nil, nonce, buf.Bytes(), nil)
 		// write file to disk
 		_, outFile := filepath.Split(*inFile)
-		outFile = outFile + ".encrypted"
+		outFile = outFile + ".enc"
 		if err = ioutil.WriteFile(outFile, contentAfter, 0600); err != nil {
 			fmt.Println(err)
 			return
