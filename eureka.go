@@ -70,8 +70,7 @@ func promptKey() (string, error) {
 
 	// clipboard option
 	useClipboard = strings.TrimSpace(useClipboard)
-	useClipboard = strings.ToLower(useClipboard)
-	if useClipboard != "n" && useClipboard != "N" {
+	if strings.ToLower(useClipboard) != "n" {
 		key, err := clipboard.ReadAll()
 		if err != nil {
 			fmt.Println("error: couldn't read the key from clipboard")
@@ -201,15 +200,19 @@ func main() {
 		fmt.Println("Do you want to copy the key to your clipboard? (Y/n)")
 		useClipboard, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			fmt.Printf("read clipboard input error: %s\nshow key here anyway:\n", err)
+			fmt.Println(stringKey)
+			return
 		}
 
 		useClipboard = strings.TrimSpace(useClipboard)
-		useClipboard = strings.ToLower(useClipboard)
-		if useClipboard != "n" && useClipboard != "N" { // use clipboard
-			clipboard.WriteAll(stringKey)
-			fmt.Println("key copied to your clipboard")
+		if strings.ToLower(useClipboard) != "n" { // use clipboard
+			if err := clipboard.WriteAll(stringKey); err != nil {
+				fmt.Printf("write clipboard error: %s\nshow key here anyway:\n", err)
+				fmt.Println(stringKey)
+			} else {
+				fmt.Println("key copied to your clipboard")
+			}
 		} else { // print to terminal and pause
 			fmt.Println(stringKey)
 		}
