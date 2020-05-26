@@ -216,6 +216,8 @@ func main() {
 		} else { // print to terminal and pause
 			fmt.Println(stringKey)
 		}
+
+		return
 	}
 
 	if *decrypt {
@@ -250,5 +252,7 @@ func main() {
 		}
 		// notification
 		fmt.Println("File decrypted at decrypted/\nCheers.")
+
+		return
 	}
 }
