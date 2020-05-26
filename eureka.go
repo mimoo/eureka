@@ -82,7 +82,7 @@ func promptKey() (string, error) {
 	fmt.Print("Enter 256-bit hexadecimal key: ")
 	key, err := reader.ReadString('\n')
 	if err != nil {
-		return "", fmt.Errorf("couldn't read the key")
+		return "", fmt.Errorf("couldn't read the key: %s", err)
 	}
 
 	return key, nil
