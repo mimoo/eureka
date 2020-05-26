@@ -137,7 +137,7 @@ func main() {
 		if _, err = io.ReadFull(rand.Reader, key); err != nil {
 			fmt.Println("error: randomness cannot be generated on your system")
 			flag.Usage()
-			return
+			os.Exit(1)
 		}
 	}
 
@@ -146,15 +146,15 @@ func main() {
 		// get key
 		keyHex, err := promptKey()
 		if err != nil {
-			fmt.Printf("eureka: %s", err)
-			return
+			fmt.Printf("eureka: %s\n", err)
+			os.Exit(1)
 		}
 
 		// decode and check key
 		key, err = hex.DecodeString(keyHex)
 		if err != nil || len(key) != 32 {
 			fmt.Println("error: the key has to be a 256-bit hexadecimal string")
-			return
+			os.Exit(1)
 		}
 	}
 
@@ -162,12 +162,12 @@ func main() {
 	cipherAES, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println("Can't instantiate AES")
-		return
+		os.Exit(1)
 	}
 	AESgcm, err := cipher.NewGCM(cipherAES)
 	if err != nil {
 		fmt.Println("Can't instantiate GCM")
-		return
+		os.Exit(1)
 	}
 
 	// encrypt or decrypt
@@ -187,7 +187,7 @@ func main() {
 		outFile = outFile + ".enc"
 		if err = ioutil.WriteFile(outFile, contentAfter, 0600); err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		// place key in clipboard
 		stringKey := fmt.Sprintf("%032x", key)
@@ -221,19 +221,19 @@ func main() {
 		if err != nil {
 			fmt.Println("error: cannot open input file")
 			flag.Usage()
-			return
+			os.Exit(1)
 		}
 		// decrypt
 		contentAfter, err = AESgcm.Open(nil, nonce, content, nil)
 		if err != nil {
 			fmt.Println("error: cannot decrypt. The key is not correct or someone tried to modify your file.")
-			return
+			os.Exit(1)
 		}
 		// create a decrypted folder
 		if _, err := os.Stat("./decrypted"); err != nil {
 			if err := os.MkdirAll("./decrypted", 0755); err != nil {
 				fmt.Println("error: cannot create folder 'decrypted'")
-				return
+				os.Exit(1)
 			}
 		} else {
 			fmt.Println("error: the folder 'decrypted' already exists. Decrypting the file could overwrite files.")
