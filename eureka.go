@@ -54,35 +54,45 @@ func openBrowser(url string) {
 		err = fmt.Errorf("unsupported platform")
 	}
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
 // prompt for the key with a GUI
-func promptKey() (string, error) {
+func promptKey(noClipboard bool) (string, error) {
+	var key string
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Do you want to use your clipboard as the key? (Y/n)")
-	useClipboard, err := reader.ReadString('\n')
-	if err != nil {
-		return "", err
-	}
-
-	// clipboard option
-	useClipboard = strings.TrimSpace(useClipboard)
-	useClipboard = strings.ToLower(useClipboard)
-	if useClipboard != "n" && useClipboard != "N" {
-		key, err := clipboard.ReadAll()
+	if !noClipboard {
+		fmt.Printf("Do you want to use your clipboard as the key? (Y/n): ")
+		useClipboard, err := reader.ReadString('\n')
 		if err != nil {
-			panic("error: couldn't read the key from clipboard")
+			return "", err
 		}
-		return key, nil
+
+		// clipboard option
+		useClipboard = strings.TrimSpace(useClipboard)
+		if strings.ToLower(useClipboard) != "n" {
+			key, err := clipboard.ReadAll()
+			if err != nil {
+				return "", fmt.Errorf("error: couldn't read the key from clipboard: %s", err)
+			}
+			return key, nil
+		} else {
+			noClipboard = true
+		}
 	}
 
-	// terminal option
-	fmt.Print("Enter 256-bit hexadecimal key: ")
-	key, err := reader.ReadString('\n')
-	if err != nil {
-		return "", fmt.Errorf("couldn't read the key")
+	if noClipboard {
+		// terminal option
+		fmt.Print("Enter 256-bit hexadecimal key: ")
+		key, err := reader.ReadString('\n')
+		if err != nil {
+			return "", fmt.Errorf("couldn't read the key: %s", err)
+		}
+
+		key = strings.TrimSpace(key)
+		return key, nil
 	}
 
 	return key, nil
@@ -92,10 +102,8 @@ func main() {
 	var err error
 
 	// parse flags
-	encrypt := flag.Bool("encrypt", false, "to encrypt")
 	about := flag.Bool("about", false, "to get redirected to github.com/mimoo/eureka")
-	decrypt := flag.Bool("decrypt", false, "to decrypt")
-	inFile := flag.String("file", "", "file to encrypt or decrypt")
+	noClipboard := flag.Bool("noclipboard", false, "no clipboard")
 
 	flag.Parse()
 
@@ -105,16 +113,25 @@ func main() {
 		return
 	}
 
-	if (*encrypt == false && *decrypt == false) || *inFile == "" {
+	if len(flag.Args()) == 0 {
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		fmt.Println(" Eureka is a tool to help you encrypt/decrypt a file")
 		fmt.Println(" to encrypt:")
-		fmt.Println("     eureka -encrypt -file [your-file]")
+		fmt.Println("     eureka your-file")
 		fmt.Println(" to decrypt:")
-		fmt.Println("     eureka -decrypt -file [encrypted-file]")
+		fmt.Println("     eureka your-file.encrypted")
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		flag.Usage()
 		return
+	}
+
+	encrypt, decrypt := new(bool), new(bool)
+	inFile := &flag.Args()[0]
+	ext := strings.ToLower(filepath.Ext(*inFile))
+	if ext != ".encrypted" {
+		*encrypt = true
+	} else {
+		*decrypt = true
 	}
 
 	// nonce = 1111...
@@ -129,24 +146,24 @@ func main() {
 		if _, err = io.ReadFull(rand.Reader, key); err != nil {
 			fmt.Println("error: randomness cannot be generated on your system")
 			flag.Usage()
-			return
+			os.Exit(1)
 		}
 	}
 
 	// get key if we are decrypting
 	if *decrypt {
 		// get key
-		keyHex, err := promptKey()
+		keyHex, err := promptKey(*noClipboard)
 		if err != nil {
-			fmt.Printf("eureka: %s", err)
-			return
+			fmt.Printf("eureka: %s\n", err)
+			os.Exit(1)
 		}
 
 		// decode and check key
 		key, err = hex.DecodeString(keyHex)
 		if err != nil || len(key) != 32 {
 			fmt.Println("error: the key has to be a 256-bit hexadecimal string")
-			return
+			os.Exit(1)
 		}
 	}
 
@@ -154,12 +171,12 @@ func main() {
 	cipherAES, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println("Can't instantiate AES")
-		return
+		os.Exit(1)
 	}
 	AESgcm, err := cipher.NewGCM(cipherAES)
 	if err != nil {
 		fmt.Println("Can't instantiate GCM")
-		return
+		os.Exit(1)
 	}
 
 	// encrypt or decrypt
@@ -170,7 +187,7 @@ func main() {
 		var buf bytes.Buffer
 		if err := compress(*inFile, &buf); err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		// encrypt compressed content
 		contentAfter = AESgcm.Seal(nil, nonce, buf.Bytes(), nil)
@@ -179,7 +196,7 @@ func main() {
 		outFile = outFile + ".encrypted"
 		if err = ioutil.WriteFile(outFile, contentAfter, 0600); err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		// place key in clipboard
 		stringKey := fmt.Sprintf("%032x", key)
@@ -190,21 +207,31 @@ func main() {
 
 		// clipboard option
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Do you want to copy the key to your clipboard? (Y/n)")
-		useClipboard, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-			return
-		}
+		if !*noClipboard {
+			fmt.Printf("Do you want to copy the key to your clipboard? (Y/n): ")
+			useClipboard, err := reader.ReadString('\n')
+			if err != nil {
+				fmt.Printf("read clipboard input error: %s\nshow key here anyway:\n", err)
+				fmt.Println(stringKey)
+				return
+			}
 
-		useClipboard = strings.TrimSpace(useClipboard)
-		useClipboard = strings.ToLower(useClipboard)
-		if useClipboard != "n" && useClipboard != "N" { // use clipboard
-			clipboard.WriteAll(stringKey)
-			fmt.Println("key copied to your clipboard")
-		} else { // print to terminal and pause
+			useClipboard = strings.TrimSpace(useClipboard)
+			if strings.ToLower(useClipboard) != "n" { // use clipboard
+				if err := clipboard.WriteAll(stringKey); err != nil {
+					fmt.Printf("write clipboard error: %s\nshow key here anyway:\n", err)
+					fmt.Println(stringKey)
+				} else {
+					fmt.Println("key copied to your clipboard")
+				}
+			} else { // print to terminal and pause
+				fmt.Println(stringKey)
+			}
+		} else {
 			fmt.Println(stringKey)
 		}
+
+		return
 	}
 
 	if *decrypt {
@@ -213,31 +240,33 @@ func main() {
 		if err != nil {
 			fmt.Println("error: cannot open input file")
 			flag.Usage()
-			return
+			os.Exit(1)
 		}
 		// decrypt
 		contentAfter, err = AESgcm.Open(nil, nonce, content, nil)
 		if err != nil {
 			fmt.Println("error: cannot decrypt. The key is not correct or someone tried to modify your file.")
-			return
+			os.Exit(1)
 		}
 		// create a decrypted folder
 		if _, err := os.Stat("./decrypted"); err != nil {
 			if err := os.MkdirAll("./decrypted", 0755); err != nil {
 				fmt.Println("error: cannot create folder 'decrypted'")
-				return
+				os.Exit(1)
 			}
 		} else {
-			fmt.Println("error: the folder 'decrypted' already exists. Decrypting the file could overwrite files.")
+			fmt.Println("info: the folder 'decrypted' already exists. Decrypting the file could overwrite files.")
 			return
 		}
 		// decompress it
 		buf := bytes.NewReader(contentAfter)
 		if err := decompress(buf, "./decrypted"); err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 		// notification
 		fmt.Println("File decrypted at decrypted/\nCheers.")
+
+		return
 	}
 }
