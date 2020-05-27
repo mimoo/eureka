@@ -119,7 +119,7 @@ func main() {
 		fmt.Println(" to encrypt:")
 		fmt.Println("     eureka your-file")
 		fmt.Println(" to decrypt:")
-		fmt.Println("     eureka encrypted-file-end-with-dot-enc")
+		fmt.Println("     eureka your-file.encrypted")
 		fmt.Println("===================ᕙ(⇀‸↼‶)ᕗ===================")
 		flag.Usage()
 		return
@@ -128,7 +128,7 @@ func main() {
 	encrypt, decrypt := new(bool), new(bool)
 	inFile := &flag.Args()[0]
 	ext := strings.ToLower(filepath.Ext(*inFile))
-	if ext != ".enc" {
+	if ext != ".encrypted" {
 		*encrypt = true
 	} else {
 		*decrypt = true
@@ -193,7 +193,7 @@ func main() {
 		contentAfter = AESgcm.Seal(nil, nonce, buf.Bytes(), nil)
 		// write file to disk
 		_, outFile := filepath.Split(*inFile)
-		outFile = outFile + ".enc"
+		outFile = outFile + ".encrypted"
 		if err = ioutil.WriteFile(outFile, contentAfter, 0600); err != nil {
 			fmt.Println(err)
 			os.Exit(1)

@@ -38,10 +38,10 @@ brew tap mimoo/eureka && brew install eureka
 eureka myfile.txt
 ```
 
-which will return a one-time 256-bit AES key and create a new `myfile.txt.enc` file:
+which will return a one-time 256-bit AES key and create a new `myfile.txt.encrypted` file:
 
 ```
-File encrypted at myfile.txt.enc
+File encrypted at myfile.txt.encrypted
 In a different secure channel, pass the following one-time key to your recipient.
 613800fc6cf88f09aa6aeafab3eedd627503e6c5de28040c549efc2c6f80178d
 ```
@@ -55,7 +55,7 @@ In a different secure channel, pass the following one-time key to your recipient
 **4.** Once *Bob* receives the file and the one-time key from two different channels, he can decrypt the file via this command:
 
 ```
-eureka myfile.txt.enc
+eureka myfile.txt.encrypted
 ```
 
 which will create a new file `myfile.txt` under a `decrypted` folder containing the original content.
