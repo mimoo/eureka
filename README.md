@@ -27,7 +27,7 @@ go get github.com/mimoo/eureka
 If you are on MacOS, just use Homebrew:
 
 ```
-brew tap mimoo/eureka && brew install eureka
+brew tap mimoo/eureka && brew install mimoo/eureka/eureka
 ```
 
 ## Usage
