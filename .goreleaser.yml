@@ -25,3 +25,10 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+brews:
+  -
+    tap:
+      owner: mimoo
+      name: homebrew-eureka
+
